@@ -1,14 +1,13 @@
+import 'package:api_with_flutter/cubit/user_cubit.dart';
+import 'package:api_with_flutter/cubit/user_state.dart';
+import 'package:api_with_flutter/widgets/custom_form_button.dart';
+import 'package:api_with_flutter/widgets/custom_input_field.dart';
+import 'package:api_with_flutter/widgets/dont_have_an_account.dart';
+import 'package:api_with_flutter/widgets/forget_password_widget.dart';
+import 'package:api_with_flutter/widgets/page_header.dart';
+import 'package:api_with_flutter/widgets/page_heading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:happy_tech_mastering_api_with_flutter/cubit/user_cubit.dart';
-import 'package:happy_tech_mastering_api_with_flutter/cubit/user_state.dart';
-import 'package:happy_tech_mastering_api_with_flutter/screens/profile_screen.dart';
-import 'package:happy_tech_mastering_api_with_flutter/widgets/custom_form_button.dart';
-import 'package:happy_tech_mastering_api_with_flutter/widgets/custom_input_field.dart';
-import 'package:happy_tech_mastering_api_with_flutter/widgets/dont_have_an_account.dart';
-import 'package:happy_tech_mastering_api_with_flutter/widgets/forget_password_widget.dart';
-import 'package:happy_tech_mastering_api_with_flutter/widgets/page_header.dart';
-import 'package:happy_tech_mastering_api_with_flutter/widgets/page_heading.dart';
 
 class SignInScreen extends StatelessWidget {
   const SignInScreen({Key? key}) : super(key: key);
@@ -22,9 +21,9 @@ class SignInScreen extends StatelessWidget {
           if (state is SignInSuccess) {
             ScaffoldMessenger.of(context)
                 .showSnackBar(const SnackBar(content: Text('SignIn Success')));
-          } else if (state is SignInError) {
+          } else if (state is SignInFailure) {
             ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(state.message)));
+                .showSnackBar(SnackBar(content: Text(state.errMessage)));
           }
         },
         builder: (context, state) {

@@ -1,14 +1,15 @@
-import 'package:happy_tech_mastering_api_with_flutter/core/api/endpoint.dart';
+import 'package:api_with_flutter/core/api/endpoint.dart';
 
-class SigninModel {
+class SignInModel {
   final String message;
   final String token;
 
-  SigninModel({required this.message, required this.token});
-  factory SigninModel.fromJson(Map<String, dynamic> json) {
-    return SigninModel(
-      message: json[ApiKeys.message],
-      token: json[ApiKeys.token],
+  SignInModel({required this.message, required this.token});
+
+  factory SignInModel.fromJson(Map<String, dynamic> jsonData) {
+    return SignInModel(
+      message: jsonData[ApiKey.message],
+      token: jsonData[ApiKey.token],
     );
   }
 }

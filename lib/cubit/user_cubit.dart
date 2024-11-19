@@ -1,14 +1,15 @@
-import 'dart:math';
+import 'dart:developer';
 
-import 'package:dio/dio.dart';
+import 'package:api_with_flutter/core/api/api_consumer.dart';
+import 'package:api_with_flutter/core/api/endpoint.dart';
+import 'package:api_with_flutter/core/cache/cache_helper.dart';
+import 'package:api_with_flutter/core/error/exceptions.dart';
+import 'package:api_with_flutter/core/functions/upload_image_to_api.dart';
+import 'package:api_with_flutter/cubit/user_state.dart';
+import 'package:api_with_flutter/models/sign_up_model.dart';
+import 'package:api_with_flutter/models/signin_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:happy_tech_mastering_api_with_flutter/core/api/api_consumer.dart';
-import 'package:happy_tech_mastering_api_with_flutter/core/api/endpoint.dart';
-import 'package:happy_tech_mastering_api_with_flutter/core/cache/cache_helper.dart';
-import 'package:happy_tech_mastering_api_with_flutter/core/error/exceptions.dart';
-import 'package:happy_tech_mastering_api_with_flutter/cubit/user_state.dart';
-import 'package:happy_tech_mastering_api_with_flutter/models/signin_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
@@ -36,32 +37,49 @@ class UserCubit extends Cubit<UserState> {
   TextEditingController signUpPassword = TextEditingController();
   //Sign up confirm password
   TextEditingController confirmPassword = TextEditingController();
-  SigninModel? user;
+  SignInModel? user;
   signIn() async {
     try {
       emit(SignInLoading());
       final response = await api.post(
-        Endpoint.signIn,
+        EndPoint.signIn,
         data: {
-          ApiKeys.email: signInEmail.text,
-          ApiKeys.password: signInPassword.text
+          ApiKey.email: signInEmail.text,
+          ApiKey.password: signInPassword.text,
         },
       );
-
-      user = SigninModel.fromJson(response);
-
+      user = SignInModel.fromJson(response);
       final decodedToken = JwtDecoder.decode(user!.token);
-      MyCacheHelper().saveData(
-        key: ApiKeys.token,
-        value: user!.token,
-      );
-      MyCacheHelper().saveData(
-        key: ApiKeys.id,
-        value: decodedToken[ApiKeys.id],
-      );
+      MyCacheHelper().saveData(key: ApiKey.token, value: user!.token);
+      MyCacheHelper().saveData(key: ApiKey.id, value: decodedToken[ApiKey.id]);
       emit(SignInSuccess());
     } on ServerException catch (e) {
-      emit(SignInError(e.errorModel.errorMessage));
+      emit(SignInFailure(errMessage: e.errModel.errorMessage));
+    }
+  }
+
+  upLoadProfilePic(XFile image) async {
+    profilePic = image;
+    emit(UploadProfilePic());
+  }
+
+  signUp() async {
+    try {
+      emit(SignUpLoading());
+      final response = await api.post(EndPoint.signUp, isFormData: true, data: {
+        ApiKey.name: signUpName.text,
+        ApiKey.phone: signUpPhoneNumber.text,
+        ApiKey.email: signUpEmail.text,
+        ApiKey.password: signUpPassword.text,
+        ApiKey.confirmPassword: confirmPassword.text,
+        ApiKey.location:
+            '{"name":"methalfa","address":"meet halfa","coordinates":[30.1572709,31.224779]}',
+        ApiKey.profilePic: await uploadImageToApi(profilePic!),
+      });
+      final signUpModel = SignUpModel.fromJson(response);
+      emit(SignUpSuccess(message: signUpModel.message));
+    } on ServerException catch (e) {
+      emit(SignInFailure(errMessage: e.errModel.errorMessage));
     }
   }
 }

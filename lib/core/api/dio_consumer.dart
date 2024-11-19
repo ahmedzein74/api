@@ -1,14 +1,14 @@
+import 'package:api_with_flutter/core/api/api_consumer.dart';
+import 'package:api_with_flutter/core/api/api_interceptors.dart';
+import 'package:api_with_flutter/core/api/endpoint.dart';
+import 'package:api_with_flutter/core/error/exceptions.dart';
 import 'package:dio/dio.dart';
-import 'package:happy_tech_mastering_api_with_flutter/core/api/api_consumer.dart';
-import 'package:happy_tech_mastering_api_with_flutter/core/api/api_interceptors.dart';
-import 'package:happy_tech_mastering_api_with_flutter/core/api/endpoint.dart';
-import 'package:happy_tech_mastering_api_with_flutter/core/error/exceptions.dart';
 
 class DioConsumer extends ApiConsumer {
   final Dio dio;
 
   DioConsumer(this.dio) {
-    dio.options.baseUrl = Endpoint.baseUrl;
+    dio.options.baseUrl = EndPoint.baseUrl;
     dio.interceptors.add(ApiInterceptor());
     dio.interceptors.add(LogInterceptor(
       request: true,
