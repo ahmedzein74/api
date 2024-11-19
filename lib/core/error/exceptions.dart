@@ -7,7 +7,7 @@ class ServerException implements Exception {
   ServerException({required this.errorModel});
 }
 
-void hnadleDioExceptions(DioException e) {
+void handleDioExceptions(DioException e) {
   switch (e.type) {
     case DioExceptionType.connectionTimeout:
       throw ServerException(errorModel: ErrorModel.fromJson(e.response!.data));

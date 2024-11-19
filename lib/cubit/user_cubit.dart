@@ -1,9 +1,16 @@
+import 'dart:math';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:happy_tech_mastering_api_with_flutter/core/api/api_consumer.dart';
+import 'package:happy_tech_mastering_api_with_flutter/core/api/endpoint.dart';
+import 'package:happy_tech_mastering_api_with_flutter/core/cache/cache_helper.dart';
+import 'package:happy_tech_mastering_api_with_flutter/core/error/exceptions.dart';
 import 'package:happy_tech_mastering_api_with_flutter/cubit/user_state.dart';
+import 'package:happy_tech_mastering_api_with_flutter/models/signin_model.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class UserCubit extends Cubit<UserState> {
   UserCubit(this.api) : super(UserInitial());
@@ -29,23 +36,32 @@ class UserCubit extends Cubit<UserState> {
   TextEditingController signUpPassword = TextEditingController();
   //Sign up confirm password
   TextEditingController confirmPassword = TextEditingController();
-
+  SigninModel? user;
   signIn() async {
     try {
       emit(SignInLoading());
       final response = await api.post(
-        "https://food-api-omega.vercel.app/api/v1/user/signin",
+        Endpoint.signIn,
         data: {
-          "email": signInEmail.text,
-          "password": signInPassword.text,
+          ApiKeys.email: signInEmail.text,
+          ApiKeys.password: signInPassword.text
         },
       );
 
+      user = SigninModel.fromJson(response);
+
+      final decodedToken = JwtDecoder.decode(user!.token);
+      MyCacheHelper().saveData(
+        key: ApiKeys.token,
+        value: user!.token,
+      );
+      MyCacheHelper().saveData(
+        key: ApiKeys.id,
+        value: decodedToken[ApiKeys.id],
+      );
       emit(SignInSuccess());
-      print(response);
-    } catch (e) {
-      emit(SignInError(e.toString()));
-      print(e.toString());
+    } on ServerException catch (e) {
+      emit(SignInError(e.errorModel.errorMessage));
     }
   }
 }

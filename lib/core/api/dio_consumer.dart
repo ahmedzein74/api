@@ -22,24 +22,23 @@ class DioConsumer extends ApiConsumer {
   @override
   Future delete(String path,
       {Map<String, String>? queryParameters,
-      Object? data,
+      dynamic data,
       bool isFormData = false}) async {
     try {
       final response = await dio.delete(
         path,
         queryParameters: queryParameters,
-        data:
-            isFormData ? FormData.fromMap(data as Map<String, dynamic>) : data,
+        data: isFormData ? FormData.fromMap(data) : data,
       );
       return response.data;
     } on DioException catch (e) {
-      hnadleDioExceptions(e);
+      handleDioExceptions(e);
     }
   }
 
   @override
   Future get(String path,
-      {Map<String, String>? queryParameters, Object? data}) async {
+      {Map<String, String>? queryParameters, dynamic data}) async {
     try {
       final response = await dio.get(
         path,
@@ -48,42 +47,41 @@ class DioConsumer extends ApiConsumer {
       );
       return response.data;
     } on DioException catch (e) {
-      hnadleDioExceptions(e);
+      handleDioExceptions(e);
     }
   }
 
   @override
   Future patch(String path,
       {Map<String, String>? queryParameters,
-      Object? data,
+      dynamic data,
       bool isFormData = false}) async {
     try {
       final response = await dio.patch(
         path,
         queryParameters: queryParameters,
-        data:
-            isFormData ? FormData.fromMap(data as Map<String, dynamic>) : data,
+        data: isFormData ? FormData.fromMap(data) : data,
       );
       return response.data;
     } on DioException catch (e) {
-      hnadleDioExceptions(e);
+      handleDioExceptions(e);
     }
   }
 
   @override
   Future post(String path,
       {Map<String, String>? queryParameters,
-      Object? data,
+      dynamic data,
       bool isFormData = false}) async {
     try {
       final response = await dio.post(
         path,
         queryParameters: queryParameters,
-        data: data,
+        data: isFormData ? FormData.fromMap(data) : data,
       );
       return response.data;
     } on DioException catch (e) {
-      hnadleDioExceptions(e);
+      handleDioExceptions(e);
     }
   }
 }
