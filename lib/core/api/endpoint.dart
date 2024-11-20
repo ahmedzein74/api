@@ -1,7 +1,10 @@
 class EndPoint {
-  static String baseUrl = 'https://food-api-omega.vercel.app/api/v1/';
-  static String signIn = 'user/signin';
-  static String signUp = 'user/signup';
+  static String baseUrl = "https://food-api-omega.vercel.app/api/v1/";
+  static String signIn = "user/signin";
+  static String signUp = "user/signup";
+  static String getUserDataEndPoint(id) {
+    return "user/get-user/$id";
+  }
 }
 
 class ApiKey {

@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:math';
 
 import 'package:api_with_flutter/core/api/api_consumer.dart';
 import 'package:api_with_flutter/core/api/endpoint.dart';
@@ -8,15 +9,17 @@ import 'package:api_with_flutter/core/functions/upload_image_to_api.dart';
 import 'package:api_with_flutter/cubit/user_state.dart';
 import 'package:api_with_flutter/models/sign_up_model.dart';
 import 'package:api_with_flutter/models/signin_model.dart';
+import 'package:api_with_flutter/models/user_model.dart';
+import 'package:api_with_flutter/repos/user_repo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class UserCubit extends Cubit<UserState> {
-  UserCubit(this.api) : super(UserInitial());
+  UserCubit(this.userRepo) : super(UserInitial());
 
-  final ApiConsumer api;
+  final UserRepo userRepo;
   //Sign in Form key
   GlobalKey<FormState> signInFormKey = GlobalKey();
   //Sign in email
@@ -39,23 +42,14 @@ class UserCubit extends Cubit<UserState> {
   TextEditingController confirmPassword = TextEditingController();
   SignInModel? user;
   signIn() async {
-    try {
-      emit(SignInLoading());
-      final response = await api.post(
-        EndPoint.signIn,
-        data: {
-          ApiKey.email: signInEmail.text,
-          ApiKey.password: signInPassword.text,
-        },
-      );
-      user = SignInModel.fromJson(response);
-      final decodedToken = JwtDecoder.decode(user!.token);
-      MyCacheHelper().saveData(key: ApiKey.token, value: user!.token);
-      MyCacheHelper().saveData(key: ApiKey.id, value: decodedToken[ApiKey.id]);
+    final response = await userRepo.signIn(
+        email: signInEmail.text, password: signInPassword.text);
+
+    response.fold((failure) {
+      emit(SignInFailure(errMessage: failure));
+    }, (signModel) {
       emit(SignInSuccess());
-    } on ServerException catch (e) {
-      emit(SignInFailure(errMessage: e.errModel.errorMessage));
-    }
+    });
   }
 
   upLoadProfilePic(XFile image) async {
@@ -64,22 +58,27 @@ class UserCubit extends Cubit<UserState> {
   }
 
   signUp() async {
-    try {
-      emit(SignUpLoading());
-      final response = await api.post(EndPoint.signUp, isFormData: true, data: {
-        ApiKey.name: signUpName.text,
-        ApiKey.phone: signUpPhoneNumber.text,
-        ApiKey.email: signUpEmail.text,
-        ApiKey.password: signUpPassword.text,
-        ApiKey.confirmPassword: confirmPassword.text,
-        ApiKey.location:
-            '{"name":"methalfa","address":"meet halfa","coordinates":[30.1572709,31.224779]}',
-        ApiKey.profilePic: await uploadImageToApi(profilePic!),
-      });
-      final signUpModel = SignUpModel.fromJson(response);
+    emit(SignUpLoading());
+    final response = await userRepo.signUp(
+        name: signUpName.text,
+        phone: signUpPhoneNumber.text,
+        email: signUpEmail.text,
+        password: signUpPassword.text,
+        confirmPassword: confirmPassword.text,
+        profilePic: profilePic!);
+    response.fold((failure) {
+      emit(SignUpFailure(errMessage: failure));
+    }, (signUpModel) {
       emit(SignUpSuccess(message: signUpModel.message));
-    } on ServerException catch (e) {
-      emit(SignInFailure(errMessage: e.errModel.errorMessage));
-    }
+    });
+  }
+
+  getUserProfile() async {
+    final response = await userRepo.getUserProfile();
+    response.fold((failure) {
+      emit(GetUserFailure(errMessage: failure));
+    }, (userModel) {
+      emit(GetUserSuccess(userModel: userModel));
+    });
   }
 }
